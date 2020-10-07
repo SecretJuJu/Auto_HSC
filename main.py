@@ -40,14 +40,14 @@ def loadJson(filename):
         return json_data
     return False
 
-def getDriver():
+def getDriver(options):
     try:
         if (os.path.isfile("./driverpath.txt")):
             f = open("./driverpath.txt","r")
             driverpath = f.readline()
             print(f"dirver path : {driverpath}")
             f.close()
-            driver = webdriver.Chrome(driverpath)
+            driver = webdriver.Chrome(driverpath,options=options)
             return driver
         else :
             print("please write driverpath.txt")
@@ -77,10 +77,12 @@ if __name__ == "__main__":
         print("can't find ./user_datas directory.")
         exit(-1)
     today = date.today()
-    driver = getDriver()
     for filename in os.listdir("./user_datas"):
         is_success = False
         user_data = loadJson(filename)
+        op = webdriver.ChromeOptions()
+        op.add_argument('headless')
+        driver = getDriver(options=op)
         driver.get(hcsurl) # hcsurl : link
         ## click the btnConfirm2 btn ##
         try :
@@ -170,3 +172,4 @@ if __name__ == "__main__":
                 print("failed")
                 client.send(Message(text="failed to hcs, im sorry T_T "), thread_id=user_data["facebook_uid"], thread_type=ThreadType.USER)
             print("message sent")
+            driver.close()
