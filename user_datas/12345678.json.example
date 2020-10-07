@@ -1,0 +1,9 @@
+{
+    "city":"경기도",
+    "school_level" : "고등학교",
+    "school_name" :"석빙고등학교",
+    "user_name" : "홍길동",
+    "user_birth" : "030303",
+    "user_pass" : "",
+    "facebook_uid" : 12345678
+}

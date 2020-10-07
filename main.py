@@ -1,21 +1,29 @@
-#!/usr/bin/python
 
+#!/usr/bin/python
 # -*- coding: 949 -*-
+
 from selenium import webdriver
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.common.keys import Keys
 from fbchat import Client
 from fbchat.models import *
-client = Client('<email>', '<password>')
-
-from defs import getDriver
-from defs import selectByText
 
 import time
 import json
 import argparse
 import os
 from datetime import date
+
+try:
+    with open("./admin.json") as json_file:
+        json_data = json.load(json_file)
+        client = Client(json_data["email"], json_data["password"])
+except  Exception as e:
+    print (e)
+    f = open("./admin.json","w")
+    f.close()
+    print("write your facebook info in admin.json")
+
 
 
 hcsurl = "https://hcs.eduro.go.kr/#/loginHome"
@@ -32,14 +40,47 @@ def loadJson(filename):
         return json_data
     return False
 
+def getDriver():
+    try:
+        if (os.path.isfile("./driverpath.txt")):
+            f = open("./driverpath.txt","r")
+            driverpath = f.readline()
+            print(f"dirver path : {driverpath}")
+            f.close()
+            driver = webdriver.Chrome(driverpath)
+            return driver
+        else :
+            print("please write driverpath.txt")
+            f=open("./driverpath.txt","w")
+            f.close()
+            exit(-1)
+    except Exception as e:
+        print("----------------- error -----------------")
+        print (e)
+        print("Probably the error is in the chromedriver\nThe path is must be english")
+        exit(-1)
+
+def selectByText(driver,ss,sel):
+    ss.click()
+    time.sleep(0.5)
+    for s in  ss.find_elements_by_css_selector("option"):
+        print(s.text)
+        if (s.text == sel):
+            s.click()
+            ss.click()
+            return True
+    return False
+
+
 if __name__ == "__main__":
     if not os.path.isdir("./user_datas"):
         print("can't find ./user_datas directory.")
         exit(-1)
     today = date.today()
+    driver = getDriver()
     for filename in os.listdir("./user_datas"):
+        is_success = False
         user_data = loadJson(filename)
-        driver = getDriver()
         driver.get(hcsurl) # hcsurl : link
         ## click the btnConfirm2 btn ##
         try :
@@ -109,8 +150,23 @@ if __name__ == "__main__":
             print("take screenshot")
             screenshot_path = "./screenshots/"+str(today)
             os.makedirs(screenshot_path,exist_ok=True)
-            driver.save_screenshot(screenshot_path+"/"+str(today)+"_"+user_data["facebook_uid"]+".png")
+            screenshot_path = screenshot_path+"/"+str(today)+"_"+str(user_data["facebook_uid"])+".png"
+            driver.save_screenshot(screenshot_path)
+            is_success = True
         except Exception as e:
             err_check_your_network(e)
-    
-    
+            pass
+        finally :
+            print("almost end..")
+            if (is_success):
+                client.sendLocalImage(
+                    screenshot_path,
+                    message=Message(text="hcs"),
+                    thread_id=user_data["facebook_uid"],
+                    thread_type=ThreadType.USER,
+                )
+                print("success")
+            else :
+                print("failed")
+                client.send(Message(text="failed to hcs, im sorry T_T "), thread_id=user_data["facebook_uid"], thread_type=ThreadType.USER)
+            print("message sent")
