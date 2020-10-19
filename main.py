@@ -5,8 +5,7 @@
 from selenium import webdriver
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.common.keys import Keys
-from fbchat import Client
-from fbchat.models import *
+
 
 import time
 import json
@@ -14,15 +13,6 @@ import argparse
 import os
 from datetime import date
 
-try:
-    with open("./admin.json") as json_file:
-        json_data = json.load(json_file)
-        client = Client(json_data["email"], json_data["password"])
-except  Exception as e:
-    print (e)
-    f = open("./admin.json","w")
-    f.close()
-    print("write your facebook info in admin.json")
 
 
 
@@ -77,9 +67,11 @@ if __name__ == "__main__":
         print("can't find ./user_datas directory.")
         exit(-1)
     today = date.today()
-    for filename in os.listdir("./user_datas"):
+
+    user_datas = loadJson("datas.json")
+    
+    for user_data in user_datas["user_datas"]:
         is_success = False
-        user_data = loadJson(filename)
         op = webdriver.ChromeOptions()
         op.add_argument('headless')
         driver = getDriver(options=op)
@@ -152,24 +144,12 @@ if __name__ == "__main__":
             print("take screenshot")
             screenshot_path = "./screenshots/"+str(today)
             os.makedirs(screenshot_path,exist_ok=True)
-            screenshot_path = screenshot_path+"/"+str(today)+"_"+str(user_data["facebook_uid"])+".png"
+            screenshot_path +="/"+str(today)+"_"+str(user_data["facebook_uid"])+".png"
             driver.save_screenshot(screenshot_path)
             is_success = True
+
         except Exception as e:
             err_check_your_network(e)
             pass
         finally :
-            print("almost end..")
-            if (is_success):
-                client.sendLocalImage(
-                    screenshot_path,
-                    message=Message(text="hcs"),
-                    thread_id=user_data["facebook_uid"],
-                    thread_type=ThreadType.USER,
-                )
-                print("success")
-            else :
-                print("failed")
-                client.send(Message(text="failed to hcs, im sorry T_T "), thread_id=user_data["facebook_uid"], thread_type=ThreadType.USER)
-            print("message sent")
             driver.close()

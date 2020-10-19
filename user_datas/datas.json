@@ -1,0 +1,14 @@
+{
+    "user_datas":[
+        {
+            "city":"서울특별시",
+            "school_level" : "고등학교",
+            "school_name" : "선린인터넷고등학교",
+            "user_name" : "지승보",
+            "user_birth" : "030903",
+            "user_pass" : "4자리숫자",
+            "facebook_uid" : "facebook _uid"
+        }
+    ]
+}
+    
