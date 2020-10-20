@@ -25,7 +25,7 @@ def err_check_your_network(e):
 
 def loadJson(filename):
     print(filename)
-    with open("./user_datas/"+filename) as json_file:
+    with open("./user_datas/"+filename,"r",encoding="UTF8") as json_file:
         json_data = json.load(json_file)
         return json_data
     return False
